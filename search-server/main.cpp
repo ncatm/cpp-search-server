@@ -2,3 +2,14 @@
 // Напишите ответ здесь:
 
 // Закомитьте изменения и отправьте их в свой репозиторий.
+include <iostream>
+
+using namespace std;
+
+int main() {
+	int x, y;
+
+	x = 9 * 9 * 9;
+	y = 1000 - x;
+	cout << y << endl;
+}
