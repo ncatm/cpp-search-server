@@ -82,8 +82,8 @@ private:
 
 
     struct Query {
-        set<string> p_words;
-        set<string> m_words;
+        set<string> plus_words;
+        set<string> minus_words;
     };
 
     map<string, map<int, double>> word_to_documents_freqs_;
@@ -92,6 +92,12 @@ private:
 
     bool IsStopWord(const string& word) const {
         return stop_words_.count(word) > 0;
+    }
+
+    double IDF(const int& x, const map<int, double>& y) const {
+        double idf;
+        idf = log(static_cast<double>(x) / y.size());
+        return idf;
     }
 
     vector<string> SplitIntoWordsNoStop(const string& text) const {
@@ -108,26 +114,23 @@ private:
         Query query_words;
         set <string> plus;
         set <string> minus;
-        for (const string word : SplitIntoWordsNoStop(text)) {
+        for (const string& word : SplitIntoWordsNoStop(text)) {
             if (word[0] == '-') {
-                minus.insert(word.substr(1));
+                query_words.minus_words.insert(word.substr(1));
             }
             else {
-                plus.insert(word);
+                query_words.plus_words.insert(word);
             }
         }
-        query_words.p_words = plus;
-        query_words.m_words = minus;
         return query_words;
     }
 
     vector<Document> FindAllDocuments(Query query_words) const {
         vector<Document> matched_documents;
         map<int, double> document_to_relevance;
-        for (const string& word : query_words.p_words) {
+        for (const string& word : query_words.plus_words) {
             if (word_to_documents_freqs_.find(word) != word_to_documents_freqs_.end()) {
-                double idf = log(static_cast<double>(document_count_) / word_to_documents_freqs_.at(word).size());
-
+                double idf = IDF(document_count_, word_to_documents_freqs_.at(word));
                 if (word_to_documents_freqs_.count(word) == 1) {
                     for (const auto& [id, freq] : word_to_documents_freqs_.at(word)) {
                         double tf_idf = freq * idf;
@@ -137,12 +140,9 @@ private:
             }
 
         }
-        for (const string& word : query_words.m_words) {
+        for (const string& word : query_words.minus_words) {
             if (word_to_documents_freqs_.find(word) != word_to_documents_freqs_.end()) {
-
-                map<int, double> idset = word_to_documents_freqs_.at(word);
-
-                for (const auto& [id, freq] : idset) {
+                for (const auto& [id, freq] : word_to_documents_freqs_.at(word)) {
                     document_to_relevance.erase(id);
                 }
             }
