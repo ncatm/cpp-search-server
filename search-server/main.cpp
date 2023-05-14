@@ -94,9 +94,9 @@ private:
         return stop_words_.count(word) > 0;
     }
 
-    double IDF(const int& x, const map<int, double>& y) const {
+    double count_IDF(const string& word) const {
         double idf;
-        idf = log(static_cast<double>(x) / y.size());
+        idf = log(static_cast<double>(document_count_) / word_to_documents_freqs_.at(word).size());
         return idf;
     }
 
@@ -130,7 +130,7 @@ private:
         map<int, double> document_to_relevance;
         for (const string& word : query_words.plus_words) {
             if (word_to_documents_freqs_.find(word) != word_to_documents_freqs_.end()) {
-                double idf = IDF(document_count_, word_to_documents_freqs_.at(word));
+                double idf = count_IDF(word);
                 if (word_to_documents_freqs_.count(word) == 1) {
                     for (const auto& [id, freq] : word_to_documents_freqs_.at(word)) {
                         double tf_idf = freq * idf;
