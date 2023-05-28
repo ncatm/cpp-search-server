@@ -99,11 +99,7 @@ public:
         return FindTopDocuments(raw_query, [status_in](int document_id, DocumentStatus status, int rating)
                                 {return status == status_in;});
     }
-    //vector<Document> FindTopDocuments(const string& raw_query, DocumentStatus status) const{
-    //    DocumentStatus lambda_parameter = status;
-    //    return FindTopDocuments(raw_query, [lambda_parameter](int document_id, DocumentStatus status, int rating)
-    //                            {return status == lambda_parameter;});
-    //}
+
     int GetDocumentCount() const {
         return documents_.size();
     }
