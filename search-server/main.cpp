@@ -84,18 +84,12 @@ public:
     template <typename StringContainer>
     explicit SearchServer(const StringContainer& stop_words)
         : stop_words_(MakeUniqueNonEmptyStrings(stop_words)) {
-        for (string word : stop_words_){
-            if (!IsValidWord(word)){
-                throw invalid_argument("invalid word"s);
-            }
-        }
+        if(any_of(stop_words_.begin(), stop_words_.end(), [](string word){return !IsValidWord (word);}))
+            throw invalid_argument("invalid word"s);
     }
  
     explicit SearchServer(const string& stop_words_text)
         : SearchServer(SplitIntoWords(stop_words_text)){
-        if (!IsValidWord(stop_words_text)){
-            throw invalid_argument("invalid word"s);
-        }
     }
  
     void AddDocument (int document_id, const string& document, DocumentStatus status,
@@ -117,10 +111,7 @@ public:
  
     template <typename DocumentPredicate>
     vector<Document> FindTopDocuments (const string& raw_query, DocumentPredicate document_predicate) const {
- 
-        if (check_query(raw_query)){
-            throw invalid_argument("invalid query"s);
-        }
+
         if (!IsValidWord(raw_query)){
             throw invalid_argument("invalid word"s);
         }
@@ -158,9 +149,7 @@ public:
     }
  
     tuple<vector<string>, DocumentStatus> MatchDocument (const string& raw_query, int document_id) const {
-         if (check_query(raw_query)){
-            throw invalid_argument("invalid query"s);
-         }
+
          if (!IsValidWord(raw_query)){
             throw invalid_argument("invalid word"s);
          }
@@ -188,20 +177,23 @@ public:
     }
  
  
-    int GetDocumentId(int index) const {
+    vector<int> GetDocumentId(int index) const {
         if (index > documents_.size() || index < 0){
             throw out_of_range("invalid document id"s);
         }
         int i = 0;
         int t_id = 0;
-        for (const auto [id, bruh] : documents_)
+        vector<int> v_id;
+        for (const auto [id, x] : documents_)
         {
-            if (i == index)
-                return id;
+            if (i == index){
+                v_id.push_back(id);    
+            }
             i++;
             t_id = id;
         }
-        return t_id;
+        v_id.push_back(t_id);
+        return v_id;
     }
  
 private:
@@ -266,10 +258,14 @@ private:
     QueryWord ParseQueryWord(string text) const {
         bool is_minus = false;
         // Word shouldn't be empty
+        if(check_query(text)){
+            throw invalid_argument("invalid query"s);
+        }        
         if (text[0] == '-') {
             is_minus = true;
             text = text.substr(1);
         }
+
         return { text, is_minus, IsStopWord(text) };
     }
  
