@@ -113,7 +113,6 @@ public:
  
     template <typename DocumentPredicate>
     vector<Document> FindTopDocuments (const string& raw_query, DocumentPredicate document_predicate) const {
-        
         const Query query = ParseQuery(raw_query);
         auto matched_documents = FindAllDocuments(query, document_predicate);
  
@@ -151,7 +150,6 @@ public:
 
         const Query query = ParseQuery(raw_query);
         vector<string> matched_words;
-        
         for (const string& word : query.plus_words) {
             if (word_to_document_freqs_.count(word) == 0) {
                 continue;
@@ -174,22 +172,12 @@ public:
     }
  
  
-    int GetDocumentId(int index) const {
+    int GetDocumentId(const int index) const {
         if (index > documents_.size() || index < 0){
-            throw out_of_range("invalid document id"s);
+            throw out_of_range("out_of_range");
         }
-        int i = 0;
-        int t_id = 0;
-
-        for (const auto [id, x] : documents_)
-        {
-            if (i == index){
-                return id;    
-            }
-            i++;
-            t_id = id;
-        }
-        return t_id;
+        int out = id_in_order_of_addition_.at(index);
+        return out;
     }
  
 private:
@@ -207,7 +195,6 @@ private:
     }
  
     static bool IsValidWord(const string& word) {
-        
         for (const char& c: word)
         {
             if (c >= 0 && c <= 31)
@@ -216,8 +203,7 @@ private:
         return true;
     }
  
-    static bool check_query(const string& word) {
-        
+    static bool CheckWord(const string& word) {
         if ((word[0] == '-' && word[1] == '-') || word[word.size()-1] == '-'){
             return true;
         }
@@ -225,7 +211,6 @@ private:
     }
  
     vector<string> SplitIntoWordsNoStop(const string& text) const {
-        
         vector<string> words;
         for (const string& word : SplitIntoWords(text)) {
             if (!IsStopWord(word)) {
@@ -236,7 +221,6 @@ private:
     }
  
     static int ComputeAverageRating(const vector<int>& ratings) {
-        
         if (ratings.empty()) {
             return 0;
         }
@@ -259,7 +243,7 @@ private:
         if (!IsValidWord(text)){
             throw invalid_argument("invalid word"s);
         }
-        if(check_query(text)){
+        if(CheckWord(text)){
             throw invalid_argument("invalid query"s);
         }    
         if (text[0] == '-') {
