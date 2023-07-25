@@ -204,10 +204,7 @@ private:
     }
  
     static bool CheckWord(const string& word) {
-        if ((word[0] == '-' && word[1] == '-') || word[word.size()-1] == '-'){
-            return true;
-        }
-        return false;
+        return word.back() == '-' || (word[0] == '-' && word[1] == '-');
     }
  
     vector<string> SplitIntoWordsNoStop(const string& text) const {
