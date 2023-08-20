@@ -1,12 +1,11 @@
 #pragma once
-#include <iostream>
 #include "string_processing.h"
 #include "document.h"
-#include <vector>
-#include <exception>
-#include <stdexcept>
 #include <map>
+#include <set>
 #include <algorithm>
+#include<cmath>
+#include <stdexcept>
 
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
 const double EPSILON = 1e-6;
@@ -17,6 +16,9 @@ public:
     explicit SearchServer(const StringContainer& stop_words);
 
     explicit SearchServer(const std::string& stop_words_text);
+
+    std::set<int>::iterator begin() const;
+    std::set<int>::iterator end() const;
 
     void AddDocument(int document_id, const std::string& document, DocumentStatus status, 
         const std::vector<int>& ratings);
@@ -30,10 +32,13 @@ public:
 
     int GetDocumentCount() const;
 
-    int GetDocumentId(int index) const;
+    std::map<std::string, double> GetWordFrequencies(const int& document_id) const;
 
     std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string& raw_query,
         int document_id) const;
+
+    void RemoveDocument(int document_id);
+
 
 private:
     struct DocumentData {
@@ -41,10 +46,13 @@ private:
         DocumentStatus status;
     };
 
-    const std::set<std::string> stop_words_;
+    std::map<int, std::map<std::string, double>> document_to_word_freqs_;
     std::map<std::string, std::map<int, double>> word_to_document_freqs_;
+
+    const std::set<std::string> stop_words_;
+    
     std::map<int, DocumentData> documents_;
-    std::vector<int> document_ids_;
+    std::set<int> document_ids_;
 
     bool IsStopWord(const std::string& word) const;
 
@@ -79,7 +87,7 @@ private:
 
 template <typename StringContainer>
 SearchServer::SearchServer(const StringContainer& stop_words)
-    : stop_words_(MakeUniqueNonEmptyStrings(stop_words))  // Extract non-empty stop words
+    : stop_words_(MakeUniqueNonEmptyStrings(stop_words))
 {
     if (!all_of(stop_words_.begin(), stop_words_.end(), IsValidWord)) {
         throw std::invalid_argument(std::string("Some of stop words are invalid"));
