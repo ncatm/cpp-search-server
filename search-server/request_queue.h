@@ -28,7 +28,7 @@ private:
     std::deque<QueryResult> requests_;
     const SearchServer& search_server_;
     const static int min_in_day_ = 1440;
-    
+
     uint64_t current_time_;
     int no_results_requests_;
 };
